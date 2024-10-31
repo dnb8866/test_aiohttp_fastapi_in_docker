@@ -1,0 +1,57 @@
+version: "3.8"
+
+services:
+  aiohttp_app:
+    build:
+      context: .
+      dockerfile: Dockerfile_aiohttp
+    ports:
+      - "8080:8080"
+    depends_on:
+      - fastapi_app
+      - postgres_db
+      - redis_db
+    networks:
+      - test_network
+    env_file:
+      - .env
+
+  fastapi_app:
+    build:
+      context: .
+      dockerfile: Dockerfile_fastapi
+    ports:
+      - "8010:8010"
+    depends_on:
+      - postgres_db
+      - redis_db
+    networks:
+      - test_network
+    env_file:
+      - .env
+
+  postgres_db:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: "test"
+      POSTGRES_PASSWORD: "password"
+      POSTGRES_DB: "testdb"
+    ports:
+      - "5433:5432"
+    networks:
+      - test_network
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis_db:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+    networks:
+      - test_network
+
+volumes:
+  postgres_data:
+
+networks:
+  test_network:
